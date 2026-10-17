@@ -144,7 +144,7 @@ export async function listCustomers(
   return rows.slice(0, options.limit);
 }
 
-export async function getCustomerDetail(
+export async function getCustomer(
   db: PrismaClient,
   businessId: string,
   customerId: string,
@@ -155,6 +155,15 @@ export async function getCustomerDetail(
   if (!customer) {
     throw notFound("Customer not found");
   }
+  return customer;
+}
+
+export async function getCustomerDetail(
+  db: PrismaClient,
+  businessId: string,
+  customerId: string,
+) {
+  const customer = await getCustomer(db, businessId, customerId);
 
   const entries = await db.customerStatementEntry.findMany({
     where: { businessId, customerId },

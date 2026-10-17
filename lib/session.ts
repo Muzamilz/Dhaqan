@@ -1,6 +1,7 @@
+import { cache } from "react";
 import { prisma } from "@/lib/prisma";
 
-export async function getSessionBusiness() {
+export const getSessionBusiness = cache(async () => {
   const existing = await prisma.business.findFirst({
     orderBy: { createdAt: "asc" },
   });
@@ -8,4 +9,4 @@ export async function getSessionBusiness() {
     return existing;
   }
   return prisma.business.create({ data: { name: "My business" } });
-}
+});
