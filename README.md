@@ -1,6 +1,29 @@
-# starter-web
+# Dhaqan
 
-A Next.js web-app template with Postgres wired up through Prisma — app runs directly on Fedora, database runs in a Podman container.
+Dhaqan is an operations platform for small and medium businesses in Somalia: one
+connected record of daily trade. Recording a sale once updates the payment, the
+stock, the customer's balance and the owner's numbers.
+
+Owners, managers and cashiers at shops that today run on notebooks, calculators,
+spreadsheets and WhatsApp messages get one loop they can trust:
+
+**sell → get paid → update stock → update the customer's balance → update the business metrics.**
+
+Designed for credit-heavy trade and local payment habits. The MVP covers
+sign-up and business setup, products, an inventory ledger, a point-of-sale
+screen, payments and customer credit, customers, expenses, a dashboard, reports,
+staff roles and an audit trail; suppliers are a simple directory (P2). The MVP
+is a responsive web app, online-only, with an offline-ready design.
+
+## Status
+
+- **Planning is done; implementation has not started.** The PRD (v1.1) was
+  reviewed end-to-end by the gstack review pipeline (CEO + engineering; design
+  and DX were out of scope) and the plan was approved (Oct 2026).
+- The agreed next step is to **validate the customer-credit wedge** (credit
+  tracking and willingness to pay) before building the full MVP.
+- What exists in this repo today is the technical scaffold only — no product
+  code yet. Deferred scope from the review lives in [TODOS.md](./TODOS.md).
 
 ## Stack
 
@@ -9,7 +32,40 @@ A Next.js web-app template with Postgres wired up through Prisma — app runs di
 - Prisma ORM 7 (driver adapter: `@prisma/adapter-pg` + `pg`)
 - PostgreSQL 17 in a Podman container (published on `127.0.0.1:5432`)
 
-## Template structure
+## Getting started
+
+Prerequisites: Node 20+, and PostgreSQL running in Podman with the container
+name and port the project expects (`dev-postgres` on `127.0.0.1:5432`).
+
+1. Create your environment file and set the real database password:
+
+   ```bash
+   cp .env.example .env
+   # edit .env → replace YOUR_PASSWORD
+   ```
+
+   `.env` is git-ignored — never commit it.
+
+2. Apply the committed migrations to your database:
+
+   ```bash
+   npx prisma migrate dev
+   ```
+
+3. Run the app:
+
+   ```bash
+   npm run dev
+   ```
+
+4. Open http://localhost:3000 — the home page shows the contents of the test
+   `User` table.
+
+Changing the `User` model? Edit `prisma/schema.prisma`, then
+`npx prisma migrate dev --name <name>` (this also regenerates the client;
+run `npx prisma generate` yourself when only the client needs refreshing).
+
+## Project structure
 
 ```
 .
@@ -24,65 +80,21 @@ A Next.js web-app template with Postgres wired up through Prisma — app runs di
 ├── prisma/
 │   ├── schema.prisma
 │   └── migrations/           # applied via `prisma migrate dev`
-├── prisma7.config.ts         # Prisma CLI config (README: dotenv + DATABASE_URL)
+├── prisma7.config.ts         # Prisma CLI config (dotenv + DATABASE_URL)
 └── scripts/
-    └── new-app.sh            # local scaffolding script
+    └── new-app.sh            # scaffolding helper carried over from the starter template
 ```
 
-## Spinning up a new app
+## Testing
 
-### Option A — local script (no network dependency)
+None yet. The reviewed plan requires real-Postgres integration tests; the agreed
+direction is Vitest with an ephemeral Postgres harness (see [TODOS.md](./TODOS.md), T1).
 
-```bash
-scripts/new-app.sh ../my-new-app my-new-app
-cd ../my-new-app
-```
+## Workflow
 
-Copies the template, resets git history, renames the package, creates `.env`,
-installs dependencies, and regenerates the Prisma client.
-
-### Option B — GitHub template
-
-1. Push this repo to GitHub.
-2. In **Settings → General**, enable **Template repository**.
-3. Create new repos with the **"Use this template"** button, or via the CLI:
-
-```bash
-gh repo create <name> --template <owner>/starter-web --public
-```
-
-## First run
-
-Prerequisites: Node 20+, and PostgreSQL running in Podman with the container
-name and port the template expects (`dev-postgres` on `127.0.0.1:5432`).
-
-1. Create your environment file and set the real database password:
-
-   ```bash
-   cp .env.example .env
-   # edit .env → replace YOUR_PASSWORD
-   ```
-
-   `.env` is git-ignored — never commit it.
-
-2. Apply the schema to your database:
-
-   ```bash
-   npx prisma migrate dev --name init
-   ```
-
-3. Run the app:
-
-   ```bash
-   npm run dev
-   ```
-
-4. Open http://localhost:3000 — the home page shows the contents of your test
-   table (the seeded `User` table).
-
-Changing the `User` model? Edit `prisma/schema.prisma`, then
-`npx prisma migrate dev --name <name>` (this also regenerates the client;
-run `npx prisma generate` yourself when only the client needs refreshing).
+- `main` is the single development branch; features are built on their own
+  branches off `main`.
+- Deferred scope from plan reviews is tracked in [TODOS.md](./TODOS.md).
 
 ## Notes
 
