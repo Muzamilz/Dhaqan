@@ -92,8 +92,9 @@ direction is Vitest with an ephemeral Postgres harness (see [TODOS.md](./TODOS.m
 
 ## Workflow
 
-- `main` is the single development branch; features are built on their own
-  branches off `main`.
+- `main` is the production branch; releases move `development` → `main`.
+- `development` is the integration branch: features branch off it and merge
+  back into it.
 - Deferred scope from plan reviews is tracked in [TODOS.md](./TODOS.md).
 
 ## Notes

@@ -19,5 +19,6 @@ Key routing rules:
 
 ## Git workflow
 
-- `main` is the single development branch.
-- Features are built on their own branches off `main`; no other long-lived branches.
+- `main` is the production branch — released code only.
+- `development` is the integration branch where features land.
+- Features are built on their own branches off `development` and merge back into `development`.
