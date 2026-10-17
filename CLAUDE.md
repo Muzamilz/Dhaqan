@@ -16,3 +16,8 @@ Key routing rules:
 - Save progress → invoke /context-save
 - Resume context → invoke /context-restore
 - Author a backlog-ready spec/issue → invoke /spec
+
+## Git workflow
+
+- `main` is the single development branch.
+- Features are built on their own branches off `main`; no other long-lived branches.
