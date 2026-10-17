@@ -87,8 +87,15 @@ run `npx prisma generate` yourself when only the client needs refreshing).
 
 ## Testing
 
-None yet. The reviewed plan requires real-Postgres integration tests; the agreed
-direction is Vitest with an ephemeral Postgres harness (see [TODOS.md](./TODOS.md), T1).
+Vitest against a real PostgreSQL database (no mocks). The dev Postgres
+(`dev-postgres` in Podman) must be running.
+
+- `npm test` — creates a throwaway `dhaqan_test` database, applies the
+  migrations (`prisma migrate deploy`), runs the suite, then drops the database.
+- `npm run test:watch` — watch mode.
+
+`TEST_DATABASE_URL` can override the throwaway database URL (same server as
+`DATABASE_URL`).
 
 ## Workflow
 

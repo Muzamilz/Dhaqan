@@ -3,7 +3,7 @@
 Deferred scope collected by `/plan-eng-review` (Eng runs last in autoplan). Each item
 lists what, why, the trade-offs, where to start, and dependencies.
 
-## T1 — Test framework + real-Postgres harness
+## T1 — Test framework + real-Postgres harness (done in `chore/test-harness`)
 - **What:** Add Vitest + an ephemeral Postgres harness (`tests/`, `vitest.config.ts`, `package.json` test script).
 - **Why:** AD-17 requires real-Postgres integration tests (AS-06/07/08/10/11); the repo has no test runner at all (`package.json:5-10`).
 - **Pros:** Unblocks every critical/race/rollback test. **Cons:** Adds a dev dependency and a CI database.
