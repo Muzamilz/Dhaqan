@@ -1,0 +1,285 @@
+---
+name: bootstrap-org
+description: Generate or update the project-specific engineering organization under .org/ — the minimal set of specialists, workflows, and policies this project actually needs. Run once per repo, or when the project's shape changes. User-invoked only.
+---
+
+# Bootstrap Organization
+
+You are setting up the engineering organization for THIS project. Not a
+generic one. Not a template dump. The organization must be justified by what
+this specific project needs — nothing more.
+
+## Invocation
+
+User-invoked only. Never call this from another skill automatically —
+organizational changes are a human decision, not a mechanical one.
+
+## Step 1 — Check for an existing organization
+
+Look for `.org/organization.md`.
+
+- **If it doesn't exist:** this is a first run. Proceed to Step 2.
+- **If it exists:** read it along with everything in `.org/engineers/` and
+  `.org/workflows/`. Tell the user what currently exists in one short
+  paragraph, then ask what changed (new component? pivot? scaling down?).
+  Propose a **diff** — engineers/workflows to add, remove, or edit — never
+  silently overwrite. Show the diff, get explicit approval, then apply it.
+
+## Step 2 — Grill the project (first run only)
+
+Invoke the `/grill` skill's method with this specific decision tree. Do not
+skip ahead — resolve each branch before moving to the next:
+
+1. What is being built, in one sentence?
+2. Who uses it, and what does success look like for them?
+3. What's the current stack, or the stack being chosen? (Language, framework,
+   infra, deploy target.)
+4. What are the load-bearing constraints? (Budget, timeline, team size —
+   here, always assume solo or near-solo unless told otherwise.)
+5. What's explicitly out of scope for now? (Write these down — this becomes
+   `.org/organization.md`'s non-goals, and prevents scope creep later.)
+6. What already exists in the repo? (Read the actual files — don't just ask.)
+
+Keep asking follow-ups until you could hand this to another engineer with
+zero additional context. If the user gives vague answers, push back with a
+concrete example rather than accepting vagueness.
+
+## Step 3 — Classify the project
+
+Before deciding process, name what kind of project this actually is — it
+changes every downstream decision. Pick the closest fit, don't force one
+that doesn't apply:
+
+CLI tool, web app, mobile app, desktop app, library/SDK, API service,
+game, simulation, data pipeline, ML/AI platform, infrastructure/DevOps
+tooling, embedded/firmware, or other (name it).
+
+State the classification plainly in `.org/organization.md` — one line —
+since it's referenced by Step 4's reasoning below (a library needs a very
+different testing/release strategy than a game, for instance).
+
+## Step 4 — Engineering Intelligence: decide the process, don't default to one
+
+Before proposing engineers, decide the project's actual engineering process,
+each choice justified against what you learned in Step 2 — not a default you
+reach for out of habit. Write these decisions to
+`.org/engineering-standards.md`. For every field, state the choice AND one
+sentence of why, tied to a specific fact about this project (team size,
+risk, stack, timeline). If you don't have a real reason, that's a signal
+you're defaulting — go find the reason or ask the user.
+
+Decide:
+
+- **SDLC methodology** — Agile/Scrum, Kanban, Waterfall-ish for a fixed-spec
+  contract, Spiral for high-uncertainty research work, or a lightweight
+  solo-dev loop (spec → build → ship, no ceremony) if that's honestly what
+  fits. For a solo or near-solo project, resist the pull toward Scrum
+  ceremony that has no one to perform it — say so explicitly if you're
+  choosing something lighter than the "textbook" answer.
+- **Architecture style** — Clean/Hexagonal/Vertical Slice/DDD/MVC/ECS/
+  Event-Driven/Microservices/modular monolith. Pick based on the project's
+  actual complexity and team size, not aspiration. A solo project rarely
+  benefits from microservices — say so if that's what applies here.
+- **Git strategy and branching model** — trunk-based, GitHub Flow, Git Flow,
+  etc. Justify against team size and release cadence.
+- **CI/CD approach** — what actually runs, on what trigger, and what gates
+  a merge. Keep this achievable on the project's actual budget (Step 2's
+  constraints) — don't propose paid infra for a zero-budget project.
+- **Code review process** — who reviews (if solo, this becomes the
+  `/review` skill's two-axis check standing in for a human reviewer — say
+  that explicitly rather than pretending a review step means a second
+  person).
+- **Testing strategy** — TDD as default per `/tdd`, plus where integration
+  and end-to-end tests fit, calibrated to actual risk (a CLI tool needs less
+  than something handling payments or user data).
+- **Documentation standard** — what's required (ADRs for architecture
+  decisions is the default via `/architect`'s output) vs. what's skippable
+  for a project this size.
+- **Security baseline** — proportionate to what the project actually
+  handles. Don't propose a full OWASP ASVS audit process for a project with
+  no user data; do propose real controls if it touches auth, payments, or
+  PII.
+- **Performance considerations** — only if the project has a stated
+  performance-sensitive surface; otherwise say explicitly that this isn't a
+  priority right now rather than filling in a generic budget.
+- **Release strategy** — continuous delivery, tagged releases, manual
+  deploys — matched to actual deploy target and team size.
+
+Coding standards belong here too, but scoped to the *actual* stack detected
+in Step 2 (e.g. "TypeScript strict mode, ESLint with the airbnb-base config,
+functional React components only" — not a generic "follow best practices"
+placeholder). If the stack isn't fully decided yet, note that and revisit
+once it is.
+
+**Quality gates:** also decide, and write to `.org/engineering-standards.md`,
+what must pass before an artifact moves to the next engineer — e.g.
+"tests pass → lint clean → architecture conformance checked → /review with
+no unresolved Blocking findings → /qa if runtime verification applies."
+Keep this proportionate to Step 3's classification and Step 2's constraints
+— a solo CLI tool doesn't need the same gate chain as something handling
+payments.
+
+## Step 5 — Propose the organization
+
+Based on the grill, decide the SMALLEST set of engineers that covers the
+project's actual surface area. Rules of thumb:
+
+- A single-service CLI or script-based project: **one generalist engineer**.
+  Don't split roles that don't need splitting.
+- A project with a clear frontend/backend split: two engineers, each owning
+  their layer, with an explicit contract between them documented in
+  `organization.md`.
+- Only add a dedicated QA or security engineer if the project has a reason
+  to need one (user-facing surface with real risk, handles sensitive data,
+  etc.) — otherwise those responsibilities fold into `/review` and `/qa`
+  skills invoked directly, no dedicated role required.
+- Never propose more than 4 engineers for a solo-maintained project without
+  explicitly justifying each one to the user first.
+
+For each proposed engineer, draft the full contract (using
+`.org-template/engineers/_template.md` as the shape) — every field below is
+required, not optional filler:
+- **Mission** — one sentence
+- **Scope / Owns** — the specific files/directories/layers, named concretely
+- **Does not own** — explicit exclusions, to prevent overlap
+- **Authority** — what this engineer can decide alone vs. what needs the
+  human (ties back to `.org/engineering-standards.md`'s review process)
+- **Inputs** — which artifact type(s) this engineer consumes to start work
+  (e.g. "a ticket file plus an approved architecture doc")
+- **Outputs** — which artifact type(s) this engineer produces
+- **Skills used** — which of `/tdd`, `/architect`, `/review`, etc. this
+  engineer typically invokes, drawn from the testing/review strategy decided
+  in Step 3
+- **Coding/architecture standards** — pulled directly from
+  `.org/engineering-standards.md`, not restated generically
+- **Definition of done** — checkable outcomes, matching the project's actual
+  testing strategy and quality gates, not a vibe
+- **Handoff rules** — exactly what must be true about an input artifact
+  before this engineer will start (e.g. "will not begin implementation on a
+  ticket lacking approved acceptance criteria") and what the output artifact
+  must contain before the next engineer can consume it
+- **Escalation rules** — what triggers stopping and asking the human rather
+  than proceeding (e.g. budget/timeline risk, a decision outside this
+  engineer's authority, conflicting requirements)
+
+**Each engineer is also a real OpenCode subagent, not just a document.**
+Alongside the contract, draft the corresponding `.opencode/agents/<name>.md`
+file using `.org-template/opencode-agent-template.md`'s shape:
+- `description` — one line, pulled from Mission, specific enough that
+  OpenCode's automatic subagent matching can actually find it for relevant
+  tasks (a vague description won't get auto-invoked for anything)
+- `mode: subagent` always — never `primary`. Tab stays reserved for
+  OpenCode's own built-in `build`/`plan` agents; generated engineers are
+  invoked automatically by description match, or manually via @mention,
+  not cycled with Tab.
+- `permission.edit` — translate the contract's **Scope paths (globs)**
+  field directly into allow rules, deny everything else. This is real
+  enforcement, not documentation — if it's wrong, the engineer will
+  mechanically fail to edit something it should be able to, so get the
+  globs right before writing.
+- `permission.skill` — allow only what the contract's **Skills used**
+  field lists, plus `memory` and `eval` by default unless the contract says
+  otherwise, deny everything else. **Always explicitly deny `bootstrap-org`**
+  — organizational changes stay human-only regardless of what a subagent's
+  contract says, no exceptions.
+- `permission.task` — deny by default. Only allow/ask a specific sibling
+  engineer if a workflow step genuinely requires direct agent-to-agent
+  handoff rather than going through an artifact — this should be rare, most
+  handoffs in this kit go through `.org/artifacts/`, not direct invocation.
+- The system prompt body stays short: point to the full contract at
+  `.org/engineers/<name>.md` and `.org/engineering-standards.md`, don't
+  duplicate their content here. If the two ever disagree, the contract
+  wins and this file should be regenerated to match — never edited to
+  match a re-interpreted contract.
+
+## Step 6 — Propose workflows
+
+Define the order things happen in, as `.org/workflows/*.md`, using the
+contract shape in `.org-template/workflows/_template.md` (Trigger,
+Preconditions, Inputs, Steps, Outputs, Retries, Failures, Escalations,
+Completion — not free prose). This reflects the SDLC methodology chosen in
+Step 4. At minimum, draft a `feature-workflow.md` describing the path from
+idea to shipped code using the skills that exist in this kit (`grill → spec
+→ tickets → architect → implement → review → qa`). Cut steps that don't
+apply — e.g. skip `/architect` for trivial tickets. Each step must name
+which artifact it consumes and produces AND which contract in
+`.org-template/contracts/` that artifact must satisfy, so a handoff can be
+checked mechanically rather than assumed.
+
+## Step 7 — Show, don't just tell
+
+Print the full proposed `.org/` tree, including `engineering-standards.md`'s
+key decisions with their justifications, and a one-line summary of each
+file's contents. **Also print each engineer's proposed
+`permission.edit`/`permission.skill`/`permission.task` block explicitly** —
+this is real enforcement, not a doc, and the human should see exactly what
+each engineer will and won't be able to touch before it's written, not
+discover it later when something mechanically fails. Ask for explicit
+approval. Allow the user to strike or edit any engineer, workflow, standards
+decision, or permission rule before anything is written.
+
+## Step 8 — Write
+
+Only after approval, write the files. Also initialize:
+- `.org/policies.md` from the template, asking the user for any project-
+  specific standards (test coverage target, commit style, etc.) — otherwise
+  leave sensible defaults in place, cross-referenced with
+  `engineering-standards.md` rather than duplicating it.
+- `.org/agent-operating-policy.md` from the template — loop/context/memory/
+  orchestration/guardrails/eval/human-in-the-loop conventions. Fill in the
+  project-specific fields (iteration budgets, what counts as sensitive data
+  for this project) rather than leaving generic placeholders.
+- `.org/memory/project-memory.md` — empty except for a header and the date.
+- `.org/artifacts/` — empty directory, `.gitkeep` only, plus an empty
+  `golden-cases.md` for `/eval` to append to.
+- Copy `.org-template/contracts/` into `.org/contracts/` as-is — these are
+  reused across projects unmodified unless this project's classification
+  genuinely needs a different artifact shape.
+- For each engineer, write both `.org/engineers/<name>.md` (the contract)
+  AND `.opencode/agents/<name>.md` (the real subagent config) approved in
+  Step 7. These are two files, generated together, staying in sync because
+  the agent config is mechanically derived from the contract — never write
+  one without the other.
+
+## Step 9 — Propose the vault mirror (optional)
+
+If the user has an Obsidian vault for this project (ask if unsure), propose
+mirroring `.vault-template/` into `01-projects/<project-name>/` in their
+vault, filling in the Dashboard and Vision notes from what Step 2's grill
+produced. Show `.vault-template/ARTIFACT-SYNC-MAP.md` so the user knows
+which future artifacts should get copied where.
+
+Until an Obsidian MCP connection is available in the session, this sync is
+manual — say so plainly rather than implying it happens automatically. If
+Obsidian MCP tools ARE present in the session, use them to create the notes
+directly instead of just describing what to copy.
+
+## Organization evolution — always proposed, never automatic
+
+Re-running this skill is how the organization evolves — there is no
+separate auto-evolution mechanism, deliberately (see Invocation above).
+What this skill DOES do differently on a re-run: check
+`.org/memory/project-memory.md` for entries tagged `friction` (see
+`/memory`'s friction-signal convention) before proposing a diff. Repeated
+friction against the same engineer's Scope is the concrete signal that a
+split, merge, or new role might be warranted — surface it as a proposal
+with the specific friction entries as evidence, and let the human decide.
+Never restructure based on a single incident; look for a pattern. If a
+diff changes any engineer's Scope paths or Skills used, regenerate that
+engineer's `.opencode/agents/<name>.md` to match — an out-of-sync
+permission file is worse than a missing one, since it fails silently
+instead of obviously.
+
+## Completion criteria
+
+This skill is done when `.org/organization.md`, `.org/engineering-standards.md`
+(every field justified, not defaulted), at least one file under
+`.org/engineers/` with all contract fields filled in (not left as template
+placeholders) AND its matching `.opencode/agents/<name>.md` with real
+permission scoping (not template placeholders left in the glob patterns),
+at least one file under `.org/workflows/` with artifacts named per step,
+and `.org/policies.md` all exist and were shown to and approved by the
+user before writing. Never mark this complete on inference alone — the
+user must have seen the actual content, including the justification for
+each engineering-standards decision and the actual permission rules each
+engineer will operate under.
